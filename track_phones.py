@@ -12,6 +12,7 @@ import pylab
 import itertools
 from itertools import permutations, repeat
 from statistics import mean 
+from math import radians, cos, sin, asin, sqrt
 
 def lonlat_to_km(x_cors, y_cors, dist):
     x_min = x_cors[0]
@@ -36,8 +37,18 @@ def number_of_combinations(first, second):
 def calculate_distance(df, comb):
     c0 = df[df['phone_id']==comb[0]]
     c1 = df[df['phone_id']==comb[1]]
+
+    lon1, lat1, lon2, lat2 = map(radians, [c0['lon'], c0['lat'], c1['lon'], c1['lat']])
+
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r
     
-    return np.sqrt(np.square(float(c0['x'])-float(c1['x'])) + np.square(float(c0['y'])-float(c1['y'])))
+    # return np.sqrt(np.square(float(c0['x'])-float(c1['x'])) + np.square(float(c0['y'])-float(c1['y'])))
 
 def find_combinations(df, first, second):
     if len(first) <= len(second):
@@ -76,7 +87,7 @@ def match_phones(df):
         first = df[df['timestamp']==times[i]]
         second = df[df['timestamp']==times[i+1]]
         n = number_of_combinations(len(first), len(second))
-        if n <= 73:
+        if n <= 6:
             final_comb += find_combinations(df, first, second)
 
     return final_comb
@@ -123,8 +134,6 @@ def main():
 
         with open('pickles/combination_'+str(m)+'.pickle', 'wb') as fp:
             pickle.dump(final_comb, fp)
-
-        print("Assign the same unique ID to phones that are expected to be the same.")
     # for unit in range(3,10):
         df = assign_new_ids(df, final_comb)
 
