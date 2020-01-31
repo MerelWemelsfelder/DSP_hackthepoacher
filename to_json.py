@@ -20,6 +20,10 @@ numbers = range(0,len(dates))
 previous_day = np.datetime64(timestamps[0], 'D')
 counter = 1
 
+# INSTERT AWS KEYS
+aws_key = None
+aws_skey = None
+
 for i in range(0,len(timestamps)):
 	# if counter > 30:
 	# 	break
@@ -36,7 +40,7 @@ for i in range(0,len(timestamps)):
 		previous_day = day
 		counter += diff
 
-	s3 = boto3.resource('s3', aws_access_key_id='AKIAYQRTZVKS5F77TBWK', aws_secret_access_key='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')
+	s3 = boto3.resource('s3', aws_access_key_id=aws_key, aws_secret_access_key=aws_skey)
 	s3object = s3.Object('phone-coordinates', str(counter)+' '+str(minute)[-5:]+'.json')
 
 	json_data = df[df['timestamp']==t].to_json(orient='index')
